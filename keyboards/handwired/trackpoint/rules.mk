@@ -9,7 +9,7 @@ MCU = atmega32u4
 #   QMK DFU      qmk-dfu
 #   ATmega32A    bootloadHID
 #   ATmega328P   USBasp
-BOOTLOADER = halfkay
+BOOTLOADER = caterina
 
 
 BOOTMAGIC_ENABLE = no      # Virtual DIP switch configuration(+1000)
@@ -26,4 +26,4 @@ BLUETOOTH_ENABLE = no       # Enable Bluetooth with the Adafruit EZ-Key HID
 AUDIO_ENABLE = no           # Audio output on port C6
 
 PS2_MOUSE_ENABLE = yes
-PS2_USE_USART = yes
+PS2_USE_INT = yes
