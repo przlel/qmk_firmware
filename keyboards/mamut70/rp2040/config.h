@@ -17,6 +17,7 @@
 #define TAPPING_TERM 190
 #undef RGB_DI_PIN
 #define RGB_DI_PIN GP16
+#define WS2812_DI_PIN GP16
 #undef RGBLED_NUM
 #define RGBLED_NUM 2
 #undef RGBLED_SPLIT
