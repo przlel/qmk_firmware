@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include QMK_KEYBOARD_H
-
+#include "os_detection.h"
 enum layer_names {
     _BASE,
     _PC,
@@ -25,10 +25,11 @@ enum layer_names {
     _NUMPAD,
     _NAV
 };
-enum custom_keycodes {
-  ST_MACRO_0,
-  ST_MACRO_11,
-};
+// enum custom_keycodes {
+//   ST_MACRO_0 = SAFE_RANGE,
+//   ST_MACRO_11,
+//   KEYCODES_LAST
+// };
 enum {
     TD_KC_RSHIFT_CAPS,
     TD_KC_LALT_MOVE_TO_NUM,
@@ -54,16 +55,11 @@ enum tap_dance_codes {
   MINS_TD,
 };
 // Tap Dance declarations
+#define CKC_SUPER KC_F20
+// enum my_keycodes {
+//   CKC_SUPER = KC_HELP
+// };
 
-enum OS {
-    MAC,PC
-};
-
-static uint32_t current_os = MAC;
-
-enum my_keycodes {
-  SWITCH_OS
-};
 
 //without mods
 #define WM(...) \
@@ -79,22 +75,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_BASE] = LAYOUT_mamut_70(
         KC_ESC,        KC_1,         KC_2,          KC_3,         KC_4,              KC_5,     DF(_BASE),                             DF(_PC),         KC_6,       KC_7,                    KC_8,        KC_9,        KC_0,       KC_DEL,
         KC_TAB,        KC_Q,         KC_W,          KC_E,         KC_R,              KC_T,     TD(SLSH_TD),                          TD(BSLS_TD),      KC_Y,       KC_U,                    KC_I,        KC_O,        KC_P,       KC_EQL,
-        KC_GRV,        KC_A,         KC_S,          MT(MOD_LALT, KC_D),  MT(MOD_LSFT, KC_F), KC_G, TD(MINS_TD),                      TD(QUOTE_TD),      KC_H,      MT(MOD_RSFT, KC_J),   MT(MOD_RALT, KC_K),   KC_L,        KC_SCLN,    KC_ENT,
+        KC_GRV,        KC_A,         KC_S,          MT(MOD_RALT, KC_D),  MT(MOD_LSFT, KC_F), KC_G, TD(MINS_TD),                      TD(QUOTE_TD),      KC_H,      MT(MOD_RSFT, KC_J),   MT(MOD_RALT, KC_K),   KC_L,        KC_SCLN,    KC_ENT,
         KC_LSFT,       KC_Z,         KC_X,          KC_C,         KC_V,              KC_B,     TD(LBRC_TD),                          TD(RBRC_TD),      KC_N,       KC_M,                    KC_COMMA,    KC_DOT,      KC_SLSH,    KC_NO,
-        MO(_NUMPAD),   KC_LCTL,      KC_LALT,       TD(CMD_TD),  LT(_NAV,KC_SPC),  KC_LSFT,   KC_ENT,                              KC_ENT,            KC_BSPC,    MT(MOD_RSFT, KC_BSPC),   MT(MOD_RALT,KC_SPACE),     MO(_NAV),    KC_RCTL,      MO(_NUMPAD)
+        MO(_NUMPAD),   KC_LCTL,      KC_LALT,       TD(CMD_TD),  LT(_NAV,KC_SPC),  KC_LSFT,   KC_ENT,                              KC_ENT,            KC_BSPC,    MT(MOD_RSFT, KC_BSPC),   RALT_T(KC_SPACE),     MO(_NAV),    KC_RCTL,      MO(_NUMPAD)
     ),
     [_PC] = LAYOUT_mamut_70(
         KC_ESC,        KC_1,         KC_2,          KC_3,         KC_4,              KC_5,      DF(_BASE),                           DF(_BASE),       KC_6,       KC_7,                    KC_8,        KC_9,        KC_0,       KC_DEL,
         KC_TAB,        KC_Q,         KC_W,          KC_E,         KC_R,              KC_T,       TD(SLSH_TD),                        TD(BSLS_TD),   KC_Y,                    KC_U,                     KC_I,         KC_O,       KC_P,       KC_EQL,
-        KC_GRV,        KC_A,         KC_S,          MT(MOD_LALT, KC_D),         MT(MOD_LSFT, KC_F),              KC_G,     TD(MINS_TD),                          TD(QUOTE_TD),      KC_H,      MT(MOD_RSFT, KC_J),   MT(MOD_RALT, KC_K),   KC_L,        KC_SCLN,    KC_ENT,
+        KC_GRV,        KC_A,         KC_S,          MT(MOD_RALT, KC_D),         MT(MOD_LSFT, KC_F),              KC_G,     TD(MINS_TD),                          TD(QUOTE_TD),      KC_H,      MT(MOD_RSFT, KC_J),   MT(MOD_RALT, KC_K),   KC_L,        KC_SCLN,    KC_ENT,
         KC_LSFT,       KC_Z,         KC_X,          KC_C,         KC_V,              KC_B,       TD(LBRC_TD),                        TD(RBRC_TD),   KC_N,                    KC_M,                     KC_COMMA,     KC_DOT,     KC_SLSH,    KC_NO,
-        MO(_NUMPAD),   KC_LCTL,  KC_LALT,          LT(_PC_CTR,KC_SPC),     LT(_NAV,KC_SPC),  KC_LSFT,    LT(_NAV,_PC_CTR),                    KC_ENT,         KC_BSPC,                 MT(MOD_RSFT, KC_BSPC),   MT(MOD_RALT,KC_SPACE),       MO(_NAV),   KC_RCTL,      MO(_NUMPAD)
+        MO(_NUMPAD),   KC_LCTL,  KC_LALT,          MT(MOD_LGUI, KC_SPC),          LT(_NAV,KC_SPC),  KC_LSFT,    LT(_NAV,_PC_CTR),                    KC_ENT,         KC_BSPC,                 MT(MOD_RSFT, KC_BSPC),   MT(MOD_RALT,KC_SPACE),       MO(_NAV),   KC_RCTL,      MO(_NUMPAD)
     ),
     [_PC_CTR] = LAYOUT_mamut_70(
-         KC_ESC,        KC_1,         KC_2,          KC_3,         KC_4,              KC_5,      DF(_BASE),                              DF(_PC_CTR),      KC_6,       KC_7,                    KC_8,        KC_9,        KC_0,       KC_DEL,
-        KC_TAB,     C(KC_Q),      KC_W,          KC_E,         C(KC_R),              C(KC_T),       C(KC_SLASH),                        TD(BSLS_TD),   KC_Y,                    KC_U,                     KC_I,         KC_O,       G(KC_P),       KC_EQL,
-        KC_GRV,     C(KC_A),      C(KC_S),       KC_D,         C(KC_F),              KC_G,       TD(MINS_TD),                        TD(QUOTE_TD),   KC_H,                    KC_J,                     KC_K,         KC_L,       KC_SCLN,    KC_ENT,
-        KC_LSFT,      C(KC_Z),      C(KC_X),       C(KC_C),      C(KC_V),              KC_B,       TD(LBRC_TD),                        TD(RBRC_TD),   KC_N,                    KC_M,                     KC_COMMA,     KC_DOT,     KC_SLSH,    KC_NO,
+        KC_ESC,        KC_1,         KC_2,          KC_3,         KC_4,              KC_5,      DF(_BASE),                           DF(_BASE),       KC_6,       KC_7,                    KC_8,        KC_9,        KC_0,       KC_DEL,
+        KC_TAB,        KC_Q,         KC_W,          KC_E,         KC_R,              KC_T,       TD(SLSH_TD),                        TD(BSLS_TD),   KC_Y,                    KC_U,                     KC_I,         KC_O,       KC_P,       KC_EQL,
+        KC_GRV,        KC_A,         KC_S,          MT(MOD_LALT, KC_D),         MT(MOD_LSFT, KC_F),              KC_G,     TD(MINS_TD),                          TD(QUOTE_TD),      KC_H,      MT(MOD_RSFT, KC_J),   MT(MOD_RALT, KC_K),   KC_L,        KC_SCLN,    KC_ENT,
+        KC_LSFT,       KC_Z,         KC_X,          KC_C,         KC_V,              KC_B,       TD(LBRC_TD),                        TD(RBRC_TD),   KC_N,                    KC_M,                     KC_COMMA,     KC_DOT,     KC_SLSH,    KC_NO,
         MO(_NUMPAD),   KC_LCTL,  KC_LALT,    KC_LCTL,   LT(_NAV,KC_SPC),   KC_LSFT,    KC_LGUI,                             KC_ENT,         KC_BSPC,                 MT(MOD_RSFT, KC_BSPC),     MT(KC_RALT,KC_SPACE),      MO(_NAV),   KC_RCTL,      MO(_NUMPAD)
     ),
     [_NUMPAD] = LAYOUT_mamut_70(
@@ -170,25 +166,108 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //             return true;
 //     }
 // }
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    uint8_t mod_state = get_mods();
-    if (layer_state_is(_PC_CTR)) {
-        if (record->event.pressed
-            && keycode != KC_LCTL && keycode != C(KC_C) && keycode != C(KC_V) && keycode != C(KC_X)
-            && keycode != C(KC_F) && keycode != C(KC_Q) && keycode != C(KC_A) && keycode != C(KC_Z)
-            && keycode != C(KC_T) && keycode != C(KC_R) && keycode != C(KC_S) && keycode != C(KC_SLASH)) {
-              if (!(mod_state & MOD_MASK_GUI)) {
-                 register_mods(MOD_MASK_GUI);
-              }
-        } else if(record->event.pressed){
-            unregister_mods(MOD_MASK_GUI);
+
+typedef struct {
+    os_variant_t os;
+    uint16_t key_code;
+} Action;
+
+typedef struct {
+    uint16_t keycode;
+    uint8_t mode;
+} Mode;
+
+Action gui_mask_actions[][3] = {
+       [KC_SPC] = {{OS_LINUX, KC_LGUI},{OS_WINDOWS, KC_LGUI}},
+};
+
+const uint8_t MOD_EMPTY = 0;
+Mode super_key_to_mask[][4] = {
+    [OS_LINUX] = {
+        { KC_TAB, MOD_LALT },
+        { KC_GRV, MOD_LALT },
+        { KC_SPACE, MOD_EMPTY },
+        { CKC_SUPER, MOD_LCTL }
+    },
+    [OS_WINDOWS] = {
+        { KC_TAB, MOD_LALT },
+        { KC_GRV, MOD_LALT },
+        { CKC_SUPER, MOD_LCTL }
+    },
+    [OS_MACOS] = {
+        { CKC_SUPER, MOD_LGUI }
+    }
+};
+
+Action *find_action(uint16_t keycode) {
+    os_variant_t os = detected_host_os();
+    if (gui_mask_actions[keycode] != NULL) {
+        for (int j = 0; j < sizeof(gui_mask_actions[keycode]) / sizeof(gui_mask_actions[keycode][0]); ++j) {
+            if (os == gui_mask_actions[keycode][j].os) {
+                return &gui_mask_actions[keycode][j];
+            }
         }
     }
-    return true; // Process all other keycodes normally
+    return NULL;
 }
 
+uint8_t find_mode(uint16_t keycode) {
+    os_variant_t os = detected_host_os();
+    uint8_t def_mod = MOD_LGUI;
+    if (super_key_to_mask[os] != NULL) {
+        for (int j = 0; j < sizeof(super_key_to_mask[os]) / sizeof(super_key_to_mask[os][0]); ++j) {
+            if (CKC_SUPER == super_key_to_mask[os][j].keycode) {
+                def_mod = super_key_to_mask[os][j].mode;
+            }
+            if (keycode == super_key_to_mask[os][j].keycode) {
+                return super_key_to_mask[os][j].mode;
+            }
+        }
+    }
+    return def_mod;
+}
+
+uint16_t last_keycode;
+uint16_t previous_key = KC_NO;
+bool SUPER_ACTIVE = false;
+bool process_super_action(uint16_t keycode, bool pressed) {
+    if (keycode == CKC_SUPER){
+       SUPER_ACTIVE = pressed;
+    }
+
+    if (SUPER_ACTIVE) {
+        uint8_t mod_state = get_mods();
+        uint8_t key_without_modifiers = keycode & 0xFF;
+        uint8_t current_mode          = find_mode(key_without_modifiers);
+        uint8_t prev_mode             = find_mode(previous_key);
+        if (prev_mode != MOD_EMPTY && prev_mode != current_mode && mod_state & prev_mode) {
+            unregister_mods(prev_mode);
+        }
+        if (current_mode != MOD_EMPTY && pressed && !(mod_state & current_mode)) {
+            register_mods(current_mode);
+        }
+
+        previous_key   = key_without_modifiers;
+        Action *action = find_action(key_without_modifiers);
+        if (action != NULL) {
+            if (pressed) {
+                register_code16(action->key_code);
+            } else {
+                unregister_code16(action->key_code);
+            }
+            return false;
+        }
+    }
+    return true;
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    return process_super_action(keycode, record->event.pressed);
+}
+
+
 void keyboard_post_init_user(void) {
-    // Initialize RGB to static black
+    // Initialize RGB to static blackG_inactiveG_
     rgblight_enable_noeeprom();
     rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
     rgblight_setrgb(0,200,0);
@@ -197,11 +276,6 @@ uint8_t previous_layer = _BASE;
 
 layer_state_t layer_state_set_user(layer_state_t state) {
     uint8_t current_layer = get_highest_layer(state);
-    if (current_layer != _PC_CTR && previous_layer == _PC_CTR)
-    {
-         unregister_mods(MOD_MASK_GUI);
-    }
-
     switch (current_layer) {
     case _BASE:
         rgblight_setrgb(0,200,0);
@@ -305,45 +379,25 @@ void CMD_TD_finished(tap_dance_state_t *state, void *user_data) {
             register_code16(KC_SPACE);
         break;
         case SINGLE_HOLD_INTERUPTED:
-        if (state->interrupting_keycode != KC_TAB && state->interrupting_keycode != KC_GRV &&
-            state->interrupting_keycode != KC_LALT && state->interrupting_keycode != KC_RALT &&
-            state->interrupting_keycode != KC_LCTL && state->interrupting_keycode != KC_RCTL &&
-            state->interrupting_keycode != KC_LSFT && state->interrupting_keycode != KC_RSFT
-            )
-        {
-            register_code16(KC_SPACE);
-        }
-        else {
-            if (current_os == MAC){
-                register_code16(KC_LGUI);
+            if (state->interrupting_keycode != KC_TAB && state->interrupting_keycode != KC_GRV && state->interrupting_keycode != KC_LALT && state->interrupting_keycode != KC_RALT && state->interrupting_keycode != KC_LCTL && state->interrupting_keycode != KC_RCTL && state->interrupting_keycode != KC_LSFT && state->interrupting_keycode != KC_RSFT) {
+                register_code16(KC_SPACE);
             } else {
-                register_mods(MOD_LGUI);//maybe add_mods
-                layer_on(_PC_CTR);
+                process_super_action(CKC_SUPER, true);
             }
-        }
-        break;
+            break;
         case DOUBLE_TAP:
             register_code16(KC_SPACE);
             register_code16(KC_SPACE);
-        break;
+            break;
         case SINGLE_HOLD:
-        if (current_os == MAC){
-            register_code16(KC_LGUI);
-        } else {
-            register_mods(MOD_LGUI);
-            layer_on(_PC_CTR);
-        }
-        break;
+            process_super_action(CKC_SUPER, true);
+            break;
         case MORE_TAPS:
-          if (current_os == MAC){
-            register_code16(LGUI(KC_SPACE));
-          }else {
-            register_code16(KC_LGUI);
-          }
-        break;
+            register_code16(KC_SPACE);
+            break;
         case DOUBLE_HOLD:
             layer_on(_NAV);
-        break;
+            break;
     }
 }
 
@@ -359,12 +413,8 @@ void CMD_TD_reset(tap_dance_state_t *state, void *user_data) {
             ){
             unregister_code16(KC_SPACE);
         } else {
-            if (current_os == MAC) {
-                unregister_code16(KC_LGUI);
-            } else {
-                unregister_mods(MOD_LGUI);
-                layer_off(_PC_CTR);
-            }
+            process_super_action(CKC_SUPER, false);
+            clear_keyboard();
         }
         break;
         case DOUBLE_TAP:
@@ -372,19 +422,11 @@ void CMD_TD_reset(tap_dance_state_t *state, void *user_data) {
             unregister_code16(KC_SPACE);
         break;
         case SINGLE_HOLD:
-        if (current_os == MAC){
-            unregister_code16(KC_LGUI);
-        } else {
-            unregister_mods(MOD_LGUI);
-            layer_off(_PC_CTR);
-        }
+            process_super_action(CKC_SUPER, false);
+            clear_keyboard();
         break;
         case MORE_TAPS:
-          if (current_os == MAC){
-            unregister_code16(LGUI(KC_SPACE));
-          }else {
-            unregister_code16(KC_LGUI);
-          }
+            unregister_code16(KC_SPACE);
         break;
         case DOUBLE_HOLD:
             layer_off(_NAV);
