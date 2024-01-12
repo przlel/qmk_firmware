@@ -177,41 +177,19 @@ typedef struct {
     uint8_t mode;
 } Mode;
 
-Action gui_mask_actions[][3] = {
-       [KC_SPC] = {{OS_LINUX, KC_LGUI},{OS_WINDOWS, KC_LGUI}},
-};
-
-const uint8_t MOD_EMPTY = 0;
-Mode super_key_to_mask[][4] = {
-    [OS_LINUX] = {
-        { KC_TAB, MOD_LALT },
-        { KC_GRV, MOD_LALT },
-        { KC_SPACE, MOD_EMPTY },
-        { CKC_SUPER, MOD_LCTL }
-    },
-    [OS_WINDOWS] = {
-        { KC_TAB, MOD_LALT },
-        { KC_GRV, MOD_LALT },
-        { CKC_SUPER, MOD_LCTL }
-    },
-    [OS_MACOS] = {
-        { CKC_SUPER, MOD_LGUI }
-    }
-};
-
-Action *find_action(uint16_t keycode) {
+Action *find_action(uint16_t keycode, Action actions[][3]) {
     os_variant_t os = detected_host_os();
-    if (gui_mask_actions[keycode] != NULL) {
-        for (int j = 0; j < sizeof(gui_mask_actions[keycode]) / sizeof(gui_mask_actions[keycode][0]); ++j) {
-            if (os == gui_mask_actions[keycode][j].os) {
-                return &gui_mask_actions[keycode][j];
+    if (actions[keycode] != NULL) {
+        for (int j = 0; j < sizeof(actions[keycode]) / sizeof(actions[keycode][0]); ++j) {
+            if (os == actions[keycode][j].os) {
+                return &actions[keycode][j];
             }
         }
     }
     return NULL;
 }
 
-uint8_t find_mode(uint16_t keycode) {
+uint8_t find_mode(uint16_t keycode, Mode super_key_to_mask[][6]) {
     os_variant_t os = detected_host_os();
     uint8_t def_mod = MOD_LGUI;
     if (super_key_to_mask[os] != NULL) {
@@ -227,44 +205,99 @@ uint8_t find_mode(uint16_t keycode) {
     return def_mod;
 }
 
-uint16_t last_keycode;
+bool process_key_action(uint16_t keycode, bool pressed, Action actions[][3]) {
+    uint8_t key_without_modifiers = keycode & 0xFF;
+
+    Action *action = find_action(key_without_modifiers, actions);
+    if (action != NULL) {
+        if (pressed) {
+            register_code16(action->key_code);
+        } else {
+            unregister_code16(action->key_code);
+        }
+        return false;
+    }
+    return true;
+}
+
+Action gui_mask_actions[][3] = {
+       [KC_SPC] = {{OS_LINUX, KC_LGUI },{OS_WINDOWS, KC_LGUI }},
+       [KC_C] =  {{OS_LINUX, KC_INS }},
+       [KC_V] =  {{OS_LINUX, KC_INS }}
+};
+
+Action default_actions[][3] = {
+       [KC_HOME] = {{OS_MACOS, LGUI(KC_LEFT)}},
+       [KC_END] = {{OS_MACOS, LGUI(KC_RIGHT)}}
+};
+const uint8_t MOD_EMPTY = 0;
+Mode super_key_to_mask[][6] = {
+    [OS_LINUX] = {
+        { KC_TAB, MOD_LALT },
+        { KC_GRV, MOD_LALT },
+        { KC_C, MOD_LCTL },
+        { KC_V, MOD_LSFT },
+        { KC_SPACE, MOD_EMPTY },
+        { CKC_SUPER, MOD_LCTL }
+    },
+    [OS_WINDOWS] = {
+        { KC_TAB, MOD_LALT },
+        { KC_GRV, MOD_LALT },
+        { CKC_SUPER, MOD_LCTL }
+    },
+    [OS_MACOS] = {
+        { CKC_SUPER, MOD_LGUI }
+    }
+};
+
 uint16_t previous_key = KC_NO;
 bool SUPER_ACTIVE = false;
 bool process_super_action(uint16_t keycode, bool pressed) {
-    if (keycode == CKC_SUPER){
-       SUPER_ACTIVE = pressed;
+    if (keycode == CKC_SUPER) {
+        SUPER_ACTIVE = pressed;
+        clear_keyboard();
     }
 
     if (SUPER_ACTIVE) {
-        uint8_t mod_state = get_mods();
+        uint8_t mod_state             = get_mods();
         uint8_t key_without_modifiers = keycode & 0xFF;
-        uint8_t current_mode          = find_mode(key_without_modifiers);
-        uint8_t prev_mode             = find_mode(previous_key);
+        uint8_t current_mode          = find_mode(key_without_modifiers, super_key_to_mask);
+        uint8_t prev_mode             = find_mode(previous_key, super_key_to_mask);
         if (prev_mode != MOD_EMPTY && prev_mode != current_mode && mod_state & prev_mode) {
             unregister_mods(prev_mode);
         }
         if (current_mode != MOD_EMPTY && pressed && !(mod_state & current_mode)) {
             register_mods(current_mode);
         }
-
-        previous_key   = key_without_modifiers;
-        Action *action = find_action(key_without_modifiers);
-        if (action != NULL) {
-            if (pressed) {
-                register_code16(action->key_code);
-            } else {
-                unregister_code16(action->key_code);
-            }
-            return false;
-        }
+        previous_key = key_without_modifiers;
+        return process_key_action(keycode, pressed, gui_mask_actions);
     }
     return true;
 }
 
+// uint32_t caps_word_monitor(uint32_t trigger_time, void *cb_arg) {
+//     /* do something */
+//     bool repeat = my_deferred_functionality();
+//     return repeat ? 500 : 0;
+// }
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    return process_super_action(keycode, record->event.pressed);
+    if(process_super_action(keycode, record->event.pressed)){
+        return process_key_action(keycode, record->event.pressed, default_actions);
+    }
+    return false;
 }
 
+// bool caps_word_press_user(uint16_t keycode) {
+//     switch (keycode) {
+//         // Keycodes that continue Caps Word, with shift applied.
+//         case KC_ESC:
+//         case KC_SPC:
+//             return false;
+
+//         default:
+//             return true;
+//     }
+// }
 
 void keyboard_post_init_user(void) {
     // Initialize RGB to static blackG_inactiveG_
@@ -310,8 +343,6 @@ layer_state_t layer_state_set_kb(layer_state_t state){
 }
 
 // Tab dance section
-
-
 
 enum {
     QUOT_LAYR, // Our custom tap dance key; add any other tap dance keys to this enum
@@ -414,7 +445,6 @@ void CMD_TD_reset(tap_dance_state_t *state, void *user_data) {
             unregister_code16(KC_SPACE);
         } else {
             process_super_action(CKC_SUPER, false);
-            clear_keyboard();
         }
         break;
         case DOUBLE_TAP:
@@ -423,7 +453,6 @@ void CMD_TD_reset(tap_dance_state_t *state, void *user_data) {
         break;
         case SINGLE_HOLD:
             process_super_action(CKC_SUPER, false);
-            clear_keyboard();
         break;
         case MORE_TAPS:
             unregister_code16(KC_SPACE);
