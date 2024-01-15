@@ -103,10 +103,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_NAV] = LAYOUT_mamut_70(
         TO(_BASE),     KC_F1,      KC_F2,    KC_F3,          KC_F4,                       KC_F5,     KC_GRV,        KC_DEL,        KC_F6,       KC_F7,       KC_F8,        KC_F9,      KC_F10,        KC_WH_U,
         _______,    _______,     _______,    KC_PAGE_UP,     _______,                     _______,   _______,       _______,       _______,     KC_HOME,     KC_UP,        KC_END,     _______,       KC_WH_D,
-        _______,    _______,     KC_HOME,    KC_PAGE_DOWN,   KC_END,                      _______,   _______,       _______,       _______,     KC_LEFT,     KC_DOWN,      KC_RIGHT,   _______,       _______,
+        _______,    _______,     KC_HOME,    MT(MOD_RALT, KC_PAGE_DOWN),    MT(MOD_LSFT,KC_END),                      _______,   _______,       _______,       _______,     KC_LEFT,     KC_DOWN,      KC_RIGHT,   _______,       _______,
         _______,    _______,     _______,    _______,        _______,                     _______,   _______,       _______,       _______,     _______,     _______,      _______,    _______,       _______,
         _______,    _______,     _______,    _______,        _______,                     _______,   _______,       _______,       _______,     _______,     _______,      _______,    _______,       _______
-    ),
+    )
 };
 
 // enum combo_events {
@@ -254,8 +254,15 @@ uint16_t previous_key = KC_NO;
 bool SUPER_ACTIVE = false;
 bool process_super_action(uint16_t keycode, bool pressed) {
     if (keycode == CKC_SUPER) {
+        if (!pressed) {
+            // deactivate default mode for super key
+            uint8_t mod_state = get_mods();
+            uint8_t prev_mode = find_mode(CKC_SUPER, super_key_to_mask);
+            if (prev_mode != MOD_EMPTY && mod_state & prev_mode) {
+                unregister_mods(prev_mode);
+            }
+        }
         SUPER_ACTIVE = pressed;
-        clear_keyboard();
     }
 
     if (SUPER_ACTIVE) {
@@ -287,17 +294,28 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return false;
 }
 
-// bool caps_word_press_user(uint16_t keycode) {
-//     switch (keycode) {
-//         // Keycodes that continue Caps Word, with shift applied.
-//         case KC_ESC:
-//         case KC_SPC:
-//             return false;
+bool caps_word_press_user(uint16_t keycode) {
+    switch (keycode) {
+        // Keycodes that continue Caps Word, with shift applied.
+        case KC_A ... KC_Z:
+        //case KC_MINS: // CHANGE - do not shift -_ (see below)
+            add_weak_mods(MOD_BIT(KC_LSFT)); // Apply shift to next key.
+            send_keyboard_report();
+            return true;
 
-//         default:
-//             return true;
-//     }
-// }
+        // Keycodes that continue Caps Word, without shifting.
+        case KC_MINS: // CHANGE - default is -_ is shifted.
+        case KC_1 ... KC_0:
+        case KC_BSPC:
+        case KC_DEL:
+        case KC_UNDS:
+        case TD(MINS_TD):
+            return true;
+
+        default:
+            return false; // Deactivate Caps Word.
+    }
+}
 
 void keyboard_post_init_user(void) {
     // Initialize RGB to static blackG_inactiveG_
