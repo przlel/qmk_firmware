@@ -289,15 +289,21 @@ bool process_super_action(uint16_t keycode, bool pressed) {
 //     bool repeat = my_deferred_functionality();
 //     return repeat ? 500 : 0;
 // }
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (keycode == DETECT_OS || selected_os == OS_UNSURE){
+    // OS_UNSURE,
+    // OS_LINUX,
+    // OS_WINDOWS,
+    // OS_MACOS,
+    // OS_IOS,OS_LINUX
+void detect_os(void) {
+    if (selected_os == OS_UNSURE) {
         selected_os = detected_host_os();
-        if(keycode == DETECT_OS){
-            return false;
+        if (selected_os == OS_IOS) {
+            selected_os = OS_MACOS;
         }
     }
-
-
+}
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    detect_os();
     if(process_super_action(keycode, record->event.pressed)){
         return process_key_action(keycode, record->event.pressed, default_actions);
     }
