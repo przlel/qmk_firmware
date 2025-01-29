@@ -23,4 +23,5 @@
 #define RGBLED_NUM 2
 #undef RGBLED_SPLIT
 #define RGBLED_SPLIT {1, 1}
+#define HOLD_ON_OTHER_KEY_PRESS
 //#define COMBO_COUNT 2
