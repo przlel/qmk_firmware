@@ -48,6 +48,7 @@ enum {
 enum tap_dance_codes {
   CMD_TD,
   LBRC_TD,
+  GRV_TD,
   BSLS_TD,
   QUOTE_TD,
   RBRC_TD,
@@ -76,21 +77,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_BASE] = LAYOUT_mamut_70(
         KC_ESC,        KC_1,         KC_2,          KC_3,         KC_4,              KC_5,     DF(_BASE),                             DETECT_OS,         KC_6,       KC_7,                    KC_8,        KC_9,        KC_0,       KC_DEL,
         KC_TAB,        KC_Q,         KC_W,          KC_E,         KC_R,              KC_T,     TD(SLSH_TD),                          TD(BSLS_TD),      KC_Y,       KC_U,                    KC_I,        KC_O,        KC_P,       KC_EQL,
-        KC_GRV,        KC_A,         MT(MOD_LSFT, KC_S),          MT(MOD_RALT, KC_D),         KC_F,              KC_G,     TD(MINS_TD),                          TD(QUOTE_TD),      KC_H,       KC_J,   MT(MOD_RALT, KC_K),   MT(MOD_RSFT, KC_L),        KC_SCLN,    KC_ENT,
+        TD(GRV_TD),        KC_A,         MT(MOD_LSFT, KC_S),          MT(MOD_RALT, KC_D),         KC_F,              KC_G,     TD(MINS_TD),                          TD(QUOTE_TD),      KC_H,       KC_J,   MT(MOD_RALT, KC_K),   MT(MOD_RSFT, KC_L),        KC_SCLN,    KC_ENT,
         KC_LSFT,       KC_Z,         KC_X,          KC_C,         KC_V,              KC_B,     TD(LBRC_TD),                          TD(RBRC_TD),      KC_N,       KC_M,                    KC_COMMA,    KC_DOT,      KC_SLSH,    KC_NO,
         MO(_NUMPAD),   KC_LCTL,      KC_LALT,       TD(CMD_TD),  LT(_NAV,KC_SPC),  KC_LSFT,   KC_ENT,                              KC_ENT,            KC_BSPC,    KC_BSPC,   KC_SPACE,     MO(_NAV),    KC_RCTL,      MO(_NUMPAD)
     ),
     [_PC] = LAYOUT_mamut_70(
         KC_ESC,        KC_1,         KC_2,          KC_3,         KC_4,              KC_5,      DF(_BASE),                           DF(_BASE),       KC_6,       KC_7,                    KC_8,        KC_9,        KC_0,       KC_DEL,
         KC_TAB,        KC_Q,         KC_W,          KC_E,         KC_R,              KC_T,       TD(SLSH_TD),                        TD(BSLS_TD),   KC_Y,                    KC_U,                     KC_I,         KC_O,       KC_P,       KC_EQL,
-        KC_GRV,        KC_A,         MT(MOD_LSFT, KC_S),          MT(MOD_RALT, KC_D),         KC_F,              KC_G,     TD(MINS_TD),                          TD(QUOTE_TD),      KC_H,       KC_J,   MT(MOD_RALT, KC_K),   MT(MOD_RSFT, KC_L),        KC_SCLN,    KC_ENT,
+        TD(GRV_TD),        KC_A,         MT(MOD_LSFT, KC_S),          MT(MOD_RALT, KC_D),         KC_F,              KC_G,     TD(MINS_TD),                          TD(QUOTE_TD),      KC_H,       KC_J,   MT(MOD_RALT, KC_K),   MT(MOD_RSFT, KC_L),        KC_SCLN,    KC_ENT,
         KC_LSFT,       KC_Z,         KC_X,          KC_C,         KC_V,              KC_B,       TD(LBRC_TD),                        TD(RBRC_TD),   KC_N,                    KC_M,                     KC_COMMA,     KC_DOT,     KC_SLSH,    KC_NO,
         MO(_NUMPAD),   KC_LCTL,  KC_LALT,          MT(MOD_LGUI, KC_SPC),          LT(_NAV,KC_SPC),  KC_LSFT,    LT(_NAV,_PC_CTR),                    KC_ENT,         KC_BSPC,                 KC_BSPC,   KC_SPACE,       MO(_NAV),   KC_RCTL,      MO(_NUMPAD)
     ),
     [_PC_CTR] = LAYOUT_mamut_70(
         KC_ESC,        KC_1,         KC_2,          KC_3,         KC_4,              KC_5,      DF(_BASE),                           DF(_BASE),       KC_6,       KC_7,                    KC_8,        KC_9,        KC_0,       KC_DEL,
         KC_TAB,        KC_Q,         KC_W,          KC_E,         KC_R,              KC_T,       TD(SLSH_TD),                        TD(BSLS_TD),   KC_Y,                    KC_U,                     KC_I,         KC_O,       KC_P,       KC_EQL,
-        KC_GRV,        KC_A,         KC_S,          MT(MOD_LALT, KC_D),         MT(MOD_LSFT, KC_F),              KC_G,     TD(MINS_TD),                          TD(QUOTE_TD),      KC_H,      MT(MOD_RSFT, KC_J),   MT(MOD_RALT, KC_K),   KC_L,        KC_SCLN,    KC_ENT,
+        TD(GRV_TD),        KC_A,         KC_S,          MT(MOD_LALT, KC_D),         MT(MOD_LSFT, KC_F),              KC_G,     TD(MINS_TD),                          TD(QUOTE_TD),      KC_H,      MT(MOD_RSFT, KC_J),   MT(MOD_RALT, KC_K),   KC_L,        KC_SCLN,    KC_ENT,
         KC_LSFT,       KC_Z,         KC_X,          KC_C,         KC_V,              KC_B,       TD(LBRC_TD),                        TD(RBRC_TD),   KC_N,                    KC_M,                     KC_COMMA,     KC_DOT,     KC_SLSH,    KC_NO,
         MO(_NUMPAD),   KC_LCTL,      KC_LALT,       TD(CMD_TD),  LT(_NAV,KC_SPC),  KC_LSFT,   KC_ENT,                              KC_ENT,            KC_BSPC,    KC_BSPC,   KC_SPACE,     MO(_NAV),    KC_RCTL,      MO(_NUMPAD)
     ),
@@ -103,10 +104,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [_NAV] = LAYOUT_mamut_70(
         TO(_BASE),     KC_F1,      KC_F2,                  KC_F3,                         KC_F4,     KC_F5,     KC_GRV,        KC_DEL,        KC_F6,       KC_F7,       KC_F8,        KC_F9,      KC_F10,        KC_WH_U,
-        _______,    _______,     _______,                  KC_PAGE_UP,                    _______,   _______,   _______,       _______,       _______,     KC_HOME,     KC_UP,        KC_END,     _______,       KC_WH_D,
+        _______,    _______,     _______,                  KC_PAGE_UP,                    _______,   _______,   _______,       _______,       _______,     KC_HOME,     KC_UP,        KC_END,     KC_MPLY,       KC_WH_D,
         _______,    _______,     MT(MOD_LSFT, KC_HOME),    MT(MOD_RALT, KC_PAGE_DOWN),    KC_END,    _______,   _______,       _______,       _______,     KC_LEFT,     KC_DOWN,      KC_RIGHT,   _______,       _______,
-        _______,    _______,     _______,                  _______,                       _______,   _______,   _______,       _______,       _______,     _______,     _______,      _______,    _______,       _______,
-        _______,    _______,     _______,                  _______,                       _______,   _______,   _______,       _______,       _______,     _______,     _______,      _______,    _______,       _______
+        _______,    _______,     _______,                  _______,                       _______,   _______,   _______,       _______,       _______,     KC_MUTE,     KC_MPRV,      KC_MNXT,    _______,       _______,
+        _______,    _______,     _______,                  _______,                       _______,   _______,   _______,       _______,       _______,     _______,     _______,      _______,    _______,       QK_BOOT
     )
 };
 
@@ -293,7 +294,7 @@ bool process_super_action(uint16_t keycode, bool pressed) {
     // OS_LINUX,
     // OS_WINDOWS,
     // OS_MACOS,
-    // OS_IOS,OS_LINUX
+    // OS_IOS,
 void detect_os(void) {
     if (selected_os == OS_UNSURE) {
         selected_os = detected_host_os();
@@ -574,6 +575,44 @@ void LBRC_TD_reset(tap_dance_state_t *state, void *user_data) {
     }
     dance_state[10].step = 0;
 }
+
+void on_GRV_TD(tap_dance_state_t *state, void *user_data);
+void GRV_TD_finished(tap_dance_state_t *state, void *user_data);
+void GRV_TD_reset(tap_dance_state_t *state, void *user_data);
+
+void on_GRV_TD(tap_dance_state_t *state, void *user_data) {
+    if(state->count == 3) {
+        tap_code16(KC_GRV);
+        tap_code16(KC_GRV);
+        tap_code16(KC_GRV);
+    }
+    if(state->count > 3) {
+        tap_code16(KC_GRV);
+    }
+}
+
+void GRV_TD_finished(tap_dance_state_t *state, void *user_data) {
+    dance_state[10].step = dance_step(state);
+    switch (dance_state[10].step) {
+        case SINGLE_HOLD_INTERUPTED:
+        case SINGLE_TAP: register_code16(KC_GRV); break;
+        case DOUBLE_TAP: register_code16(KC_TILD); break;
+        case DOUBLE_SINGLE_TAP: tap_code16(KC_GRV); register_code16(KC_GRV);
+    }
+}
+
+void GRV_TD_reset(tap_dance_state_t *state, void *user_data) {
+    wait_ms(10);
+    switch (dance_state[10].step) {
+        case SINGLE_HOLD_INTERUPTED:
+        case SINGLE_TAP: unregister_code16(KC_GRV); break;
+        case DOUBLE_TAP: unregister_code16(KC_TILD); break;
+        case DOUBLE_SINGLE_TAP: unregister_code16(KC_GRV); break;
+    }
+    dance_state[10].step = 0;
+}
+
+
 void on_BSLS_TD(tap_dance_state_t *state, void *user_data);
 void BSLS_TD_finished(tap_dance_state_t *state, void *user_data);
 void BSLS_TD_reset(tap_dance_state_t *state, void *user_data);
@@ -727,6 +766,7 @@ tap_dance_action_t tap_dance_actions[] = {
 
     [CMD_TD] = ACTION_TAP_DANCE_FN_ADVANCED(on_CMD_TD, CMD_TD_finished, CMD_TD_reset),
     [LBRC_TD] = ACTION_TAP_DANCE_FN_ADVANCED(on_LBRC_TD, LBRC_TD_finished, LBRC_TD_reset),
+    [GRV_TD] = ACTION_TAP_DANCE_FN_ADVANCED(on_GRV_TD, GRV_TD_finished, GRV_TD_reset),
     [BSLS_TD] = ACTION_TAP_DANCE_FN_ADVANCED(on_BSLS_TD, BSLS_TD_finished, BSLS_TD_reset),
     [QUOTE_TD] = ACTION_TAP_DANCE_FN_ADVANCED(on_QUOTE_TD, QUOTE_TD_finished, QUOTE_TD_reset),
     [RBRC_TD] = ACTION_TAP_DANCE_FN_ADVANCED(on_RBRC_TD, RBRC_TD_finished, RBRC_TD_reset),
