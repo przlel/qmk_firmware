@@ -14,7 +14,7 @@
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
-        "via": false
+        "via": true
     },
     "matrix_pins": {
         "cols": ["GP8","GP7","GP6","GP5","GP4","GP3","GP2"],

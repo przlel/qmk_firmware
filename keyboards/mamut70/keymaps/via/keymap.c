@@ -103,8 +103,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______,    _______,     _______,    _______,        _______,    _______,   _______,       _______,       _______,      _______,     _______,     _______,   _______,         _______
     ),
     [_NAV] = LAYOUT_mamut_70(
-        TO(_BASE),     KC_F1,      KC_F2,                  KC_F3,                         KC_F4,     KC_F5,     KC_GRV,        KC_DEL,        KC_F6,       KC_F7,       KC_F8,        KC_F9,      KC_F10,        KC_WH_U,
-        _______,    _______,     _______,                  KC_PAGE_UP,                    _______,   _______,   _______,       _______,       _______,     KC_HOME,     KC_UP,        KC_END,     KC_MPLY,       KC_WH_D,
+        TO(_BASE),     KC_F1,      KC_F2,                  KC_F3,                         KC_F4,     KC_F5,     KC_GRV,        KC_DEL,        KC_F6,       KC_F7,       KC_F8,        KC_F9,      KC_F10,        KC_TRNS,
+        _______,    _______,     _______,                  KC_PAGE_UP,                    _______,   _______,   _______,       _______,       _______,     KC_HOME,     KC_UP,        KC_END,     KC_MPLY,       KC_TRNS,
         _______,    _______,     MT(MOD_LSFT, KC_HOME),    MT(MOD_RALT, KC_PAGE_DOWN),    KC_END,    _______,   _______,       _______,       _______,     KC_LEFT,     KC_DOWN,      KC_RIGHT,   _______,       _______,
         _______,    _______,     _______,                  _______,                       _______,   _______,   _______,       _______,       _______,     KC_MUTE,     KC_MPRV,      KC_MNXT,    _______,       _______,
         _______,    _______,     _______,                  _______,                       _______,   _______,   _______,       _______,       _______,     _______,     _______,      _______,    _______,       QK_BOOT
@@ -182,11 +182,9 @@ typedef struct {
 os_variant_t selected_os = OS_UNSURE;
 
 Action *find_action(uint16_t keycode, Action actions[][3]) {
-    if (actions[keycode] != NULL) {
-        for (int j = 0; j < sizeof(actions[keycode]) / sizeof(actions[keycode][0]); ++j) {
-            if (selected_os == actions[keycode][j].os) {
-                return &actions[keycode][j];
-            }
+    for (int j = 0; j < sizeof(actions[keycode]) / sizeof(actions[keycode][0]); ++j) {
+        if (selected_os == actions[keycode][j].os) {
+            return &actions[keycode][j];
         }
     }
     return NULL;
@@ -194,14 +192,12 @@ Action *find_action(uint16_t keycode, Action actions[][3]) {
 
 uint8_t find_mode(uint16_t keycode, Mode super_key_to_mask[][6]) {
     uint8_t def_mod = MOD_LGUI;
-    if (super_key_to_mask[selected_os] != NULL) {
-        for (int j = 0; j < sizeof(super_key_to_mask[selected_os]) / sizeof(super_key_to_mask[selected_os][0]); ++j) {
-            if (CKC_SUPER == super_key_to_mask[selected_os][j].keycode) {
-                def_mod = super_key_to_mask[selected_os][j].mode;
-            }
-            if (keycode == super_key_to_mask[selected_os][j].keycode) {
-                return super_key_to_mask[selected_os][j].mode;
-            }
+    for (int j = 0; j < sizeof(super_key_to_mask[selected_os]) / sizeof(super_key_to_mask[selected_os][0]); ++j) {
+        if (CKC_SUPER == super_key_to_mask[selected_os][j].keycode) {
+            def_mod = super_key_to_mask[selected_os][j].mode;
+        }
+        if (keycode == super_key_to_mask[selected_os][j].keycode) {
+            return super_key_to_mask[selected_os][j].mode;
         }
     }
     return def_mod;
@@ -229,8 +225,8 @@ Action gui_mask_actions[][3] = {
 };
 
 Action default_actions[][3] = {
-       [KC_HOME] = {{OS_MACOS, LGUI(KC_LEFT)}},
-       [KC_END] = {{OS_MACOS, LGUI(KC_RIGHT)}}
+       [KC_HOME] = {{OS_MACOS, LCTL(KC_A)}},
+       [KC_END] = {{OS_MACOS, LCTL(KC_E)}}
 };
 const uint8_t MOD_EMPTY = 0;
 Mode super_key_to_mask[][6] = {
