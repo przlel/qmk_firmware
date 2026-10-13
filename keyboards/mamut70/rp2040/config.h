@@ -1,27 +1,9 @@
-// Copyright 2022 Stefan Kerkmann
+// Copyright 2023 Przemysław (@przlel)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
-
-// #define DEBUG_MATRIX_SCAN_RATE
-
-// #define QMK_WAITING_TEST_BUSY_PIN GP8
-// #define QMK_WAITING_TEST_YIELD_PIN GP9
-
+/* Double tap of the reset button enters the RP2040 bootloader. No LED is
+ * defined: GP16 drives the WS2812 data line, not a plain LED. */
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET
-#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_LED GP16
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 500U
-#define USB_SUSPEND_WAKEUP_DELAY 200
-#define BOTH_SHIFTS_TURNS_ON_CAPS_WORD
-#define TAPPING_TERM 190
-#define PERMISSIVE_HOLD
-#define WS2812_DI_PIN GP16
-#undef RGBLED_NUM
-#define RGBLED_NUM 2
-#define RGBLIGHT_LED_COUNT RGBLED_NUM
-#undef RGBLED_SPLIT
-#define RGBLED_SPLIT {1, 1}
-#define HOLD_ON_OTHER_KEY_PRESS
-#define DYNAMIC_KEYMAP_LAYER_COUNT 8
-//#define COMBO_COUNT 2
