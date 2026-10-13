@@ -37,7 +37,8 @@
         "transport": {
             "sync": {
                 "layer_state": true
-            }
+            },
+            "watchdog": true
         },
         "usb_detect": {
             "enabled": true
