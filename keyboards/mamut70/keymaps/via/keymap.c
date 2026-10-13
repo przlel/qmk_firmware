@@ -181,9 +181,15 @@ typedef struct {
 
 os_variant_t selected_os = OS_UNSURE;
 
-Action *find_action(uint16_t keycode, Action actions[][3]) {
+/* Empty slots are zero-initialized to {OS_UNSURE, KC_NO}, so an undetected
+ * OS must never match them, otherwise every key gets swallowed. The table is
+ * indexed by the low byte of the keycode, so check its size before reading. */
+Action *find_action(uint16_t keycode, Action actions[][3], size_t rows) {
+    if (selected_os == OS_UNSURE || keycode >= rows) {
+        return NULL;
+    }
     for (int j = 0; j < sizeof(actions[keycode]) / sizeof(actions[keycode][0]); ++j) {
-        if (selected_os == actions[keycode][j].os) {
+        if (selected_os == actions[keycode][j].os && actions[keycode][j].key_code != KC_NO) {
             return &actions[keycode][j];
         }
     }
@@ -203,10 +209,10 @@ uint8_t find_mode(uint16_t keycode, Mode super_key_to_mask[][6]) {
     return def_mod;
 }
 
-bool process_key_action(uint16_t keycode, bool pressed, Action actions[][3]) {
+bool process_key_action(uint16_t keycode, bool pressed, Action actions[][3], size_t rows) {
     uint8_t key_without_modifiers = keycode & 0xFF;
 
-    Action *action = find_action(key_without_modifiers, actions);
+    Action *action = find_action(key_without_modifiers, actions, rows);
     if (action != NULL) {
         if (pressed) {
             register_code16(action->key_code);
@@ -250,14 +256,16 @@ Mode super_key_to_mask[][6] = {
 
 uint16_t previous_key = KC_NO;
 bool SUPER_ACTIVE = false;
+/* Mods registered by the super logic itself. Releasing only the mode of
+ * CKC_SUPER left e.g. Alt held after Super+Tab on Linux and Windows. */
+uint8_t super_mods = 0;
 bool process_super_action(uint16_t keycode, bool pressed) {
     if (keycode == CKC_SUPER) {
         if (!pressed) {
-            // deactivate default mode for super key
-            uint8_t mod_state = get_mods();
-            uint8_t prev_mode = find_mode(CKC_SUPER, super_key_to_mask);
-            if (prev_mode != MOD_EMPTY && mod_state & prev_mode) {
-                unregister_mods(prev_mode);
+            // release every mod the super key registered, not only its default mode
+            if (super_mods != MOD_EMPTY) {
+                unregister_mods(super_mods);
+                super_mods = MOD_EMPTY;
             }
             previous_key = KC_NO;
         }
@@ -269,14 +277,17 @@ bool process_super_action(uint16_t keycode, bool pressed) {
         uint8_t key_without_modifiers = keycode & 0xFF;
         uint8_t current_mode          = find_mode(key_without_modifiers, super_key_to_mask);
         uint8_t prev_mode             = find_mode(previous_key, super_key_to_mask);
-        if (prev_mode != MOD_EMPTY && prev_mode != current_mode && mod_state & prev_mode) {
-            unregister_mods(prev_mode);
+        uint8_t prev_super_mods       = prev_mode & super_mods;
+        if (prev_super_mods != MOD_EMPTY && prev_mode != current_mode) {
+            unregister_mods(prev_super_mods);
+            super_mods &= ~prev_super_mods;
         }
         if (current_mode != MOD_EMPTY && pressed && !(mod_state & current_mode)) {
             register_mods(current_mode);
+            super_mods |= current_mode;
         }
         previous_key = key_without_modifiers;
-        return process_key_action(keycode, pressed, gui_mask_actions);
+        return process_key_action(keycode, pressed, gui_mask_actions, ARRAY_SIZE(gui_mask_actions));
     }
     return true;
 }
@@ -302,7 +313,7 @@ void detect_os(void) {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     detect_os();
     if(process_super_action(keycode, record->event.pressed)){
-        return process_key_action(keycode, record->event.pressed, default_actions);
+        return process_key_action(keycode, record->event.pressed, default_actions, ARRAY_SIZE(default_actions));
     }
     return false;
 }
@@ -588,8 +599,8 @@ void on_GRV_TD(tap_dance_state_t *state, void *user_data) {
 }
 
 void GRV_TD_finished(tap_dance_state_t *state, void *user_data) {
-    dance_state[10].step = dance_step(state);
-    switch (dance_state[10].step) {
+    dance_state[9].step = dance_step(state);
+    switch (dance_state[9].step) {
         case SINGLE_HOLD_INTERUPTED:
         case SINGLE_TAP: register_code16(KC_GRV); break;
         case DOUBLE_TAP: register_code16(KC_TILD); break;
@@ -599,13 +610,13 @@ void GRV_TD_finished(tap_dance_state_t *state, void *user_data) {
 
 void GRV_TD_reset(tap_dance_state_t *state, void *user_data) {
     wait_ms(10);
-    switch (dance_state[10].step) {
+    switch (dance_state[9].step) {
         case SINGLE_HOLD_INTERUPTED:
         case SINGLE_TAP: unregister_code16(KC_GRV); break;
         case DOUBLE_TAP: unregister_code16(KC_TILD); break;
         case DOUBLE_SINGLE_TAP: unregister_code16(KC_GRV); break;
     }
-    dance_state[10].step = 0;
+    dance_state[9].step = 0;
 }
 
 
