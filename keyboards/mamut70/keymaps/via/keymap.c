@@ -297,21 +297,15 @@ bool process_super_action(uint16_t keycode, bool pressed) {
 //     bool repeat = my_deferred_functionality();
 //     return repeat ? 500 : 0;
 // }
-    // OS_UNSURE,
-    // OS_LINUX,
-    // OS_WINDOWS,
-    // OS_MACOS,
-    // OS_IOS,
-void detect_os(void) {
-    if (selected_os == OS_UNSURE) {
-        selected_os = detected_host_os();
-        if (selected_os == OS_IOS) {
-            selected_os = OS_MACOS;
-        }
-    }
+/* QMK calls this once the guess is stable for OS_DETECTION_DEBOUNCE ms and
+ * again whenever it changes, so a late USB setup packet can still correct
+ * an early wrong guess. Caching the first value on keypress could not. */
+bool process_detected_host_os_user(os_variant_t os) {
+    selected_os = (os == OS_IOS) ? OS_MACOS : os;
+    return true;
 }
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    detect_os();
     if(process_super_action(keycode, record->event.pressed)){
         return process_key_action(keycode, record->event.pressed, default_actions, ARRAY_SIZE(default_actions));
     }
@@ -341,16 +335,63 @@ bool caps_word_press_user(uint16_t keycode) {
     }
 }
 
+/* The right half LED shows the host OS at 60% brightness (153/255). Each
+ * half drives only its own LED, and as slave the right half never gets
+ * layer_state_set_user, so it polls the OS that the master syncs over
+ * SPLIT_DETECTED_OS_ENABLE. */
+#define OS_LED_INDEX 1
+#define OS_LED_VAL 153
+
 void keyboard_post_init_user(void) {
     // Initialize RGB to static blackG_inactiveG_
     rgblight_enable_noeeprom();
     rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
     rgblight_setrgb(0,200,0);
+    if (!is_keyboard_left()) {
+        /* host OS not known yet, see housekeeping_task_user */
+        rgblight_setrgb_at(0, 0, 0, OS_LED_INDEX);
+    }
 }
+
+static void set_os_led(os_variant_t os) {
+    switch (os) {
+        case OS_MACOS:
+        case OS_IOS:
+            rgblight_setrgb_at(OS_LED_VAL, OS_LED_VAL, OS_LED_VAL, OS_LED_INDEX);
+            break;
+        case OS_WINDOWS:
+            rgblight_setrgb_at(0, 0, OS_LED_VAL, OS_LED_INDEX);
+            break;
+        case OS_LINUX:
+            rgblight_setrgb_at(0, OS_LED_VAL, 0, OS_LED_INDEX);
+            break;
+        default:
+            rgblight_setrgb_at(0, 0, 0, OS_LED_INDEX);
+    }
+}
+
+void housekeeping_task_user(void) {
+    static os_variant_t shown_os = OS_UNSURE;
+    if (is_keyboard_left()) {
+        return;
+    }
+    /* As master, use the debounced value instead of intermediate guesses. */
+    os_variant_t os = is_keyboard_master() ? selected_os : detected_host_os();
+    if (os != shown_os) {
+        shown_os = os;
+        set_os_led(os);
+    }
+}
+
 uint8_t previous_layer = _BASE;
 
 layer_state_t layer_state_set_user(layer_state_t state) {
     uint8_t current_layer = get_highest_layer(state);
+    if (!is_keyboard_left()) {
+        /* the right half LED belongs to the host OS indicator */
+        previous_layer = current_layer;
+        return state;
+    }
     switch (current_layer) {
     case _BASE:
         rgblight_setrgb(0,200,0);
