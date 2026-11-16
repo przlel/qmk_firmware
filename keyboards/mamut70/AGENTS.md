@@ -183,6 +183,29 @@ Mac was detected as Windows. Upstream commit `d3069760d7` (qmk#26303, on
 fork. Test: `TestChibiosMacosWithEarly04Packet`, run with
 `make test:os_detection`.
 
+### Keymap-level fix for macOS 15.7 reported as Linux
+The #26303 fix above only guards the Windows rule. macOS 15.7 has a second
+misclassification path: during enumeration it sends `02 10 02 0E 02 42 04`
+with **no 0xFF packets** (the trailing `FF FF` in the capture above came
+from later reads, e.g. USB profiling tools; macOS 26.x sends them during
+enumeration, which is why the newer machine worked). After the 0x04 packet
+the counts are `cnt_02=3, cnt_04=1, cnt_ff=0` — exactly the core's PS5
+rule — so the core guesses `OS_LINUX` and the trailing-0xFF macOS rule
+never fires. Independent 15.7.4 data: zmkfirmware/zmk#2553.
+
+The fix lives in the keymap, not in `quantum/os_detection.c`, so upstream
+merges stay conflict-free:
+- `rules.mk` adds `EXTRALDFLAGS += -Wl,--wrap=process_wlength`, routing
+  every core call through `__wrap_process_wlength` in `keymap.c`.
+- The wrapper calls `__real_process_wlength` (untouched core), tracks its
+  own fingerprint, and when it sees three 0x2 reads without 0xFF and the
+  second packet is not 0x4 (real PS5 always sends 0x4 second), it calls
+  `slave_update_detected_host_os(OS_MACOS)` — the public setter, which
+  also re-arms the report debounce. Requires `SPLIT_DETECTED_OS_ENABLE`.
+- If upstream ever fixes the PS5 rule, the wrapper becomes redundant and
+  can be deleted; if upstream renames `process_wlength`, the build fails
+  loudly at link time (undefined `__real_process_wlength`).
+
 ### OS indicator LED (right half)
 - macOS/iOS: white, Windows: blue, Linux: green, all at 153/255 (60%)
 - Undetected: off

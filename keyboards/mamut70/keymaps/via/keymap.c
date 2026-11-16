@@ -305,6 +305,53 @@ bool process_detected_host_os_user(os_variant_t os) {
     return true;
 }
 
+/* macOS 15.7 detection fix, kept at keymap level (see rules.mk for the
+ * linker --wrap flag) so quantum/os_detection.c stays identical to
+ * upstream. The core's PS5 rule (three 0x2, one 0x4, no 0xFF) also matches
+ * macOS 15.7 enumeration `02 10 02 0E 02 42 04`: 15.7 sends no 0xFF string
+ * reads during enumeration, so the core's trailing-0xFF macOS rule never
+ * fires and the keyboard reports Linux. The FF FF packets in the older
+ * 15.7 capture came from later reads (e.g. USB profiling tools), not from
+ * enumeration itself; macOS 26.x does send them during enumeration, which
+ * is why the newer machine worked. */
+#if !defined(SPLIT_KEYBOARD) || !defined(SPLIT_DETECTED_OS_ENABLE)
+#    error "The macOS 15.7 wrapper needs SPLIT_DETECTED_OS_ENABLE for slave_update_detected_host_os()"
+#endif
+
+void __real_process_wlength(uint16_t w_length);
+
+static struct {
+    uint8_t  count;
+    uint8_t  cnt_02;
+    uint8_t  cnt_ff;
+    uint16_t second_wlength;
+} macos_fingerprint = {0};
+
+void __wrap_process_wlength(uint16_t w_length) {
+    __real_process_wlength(w_length);
+
+    macos_fingerprint.count++;
+    if (macos_fingerprint.count == 2) {
+        macos_fingerprint.second_wlength = w_length;
+    }
+    if (w_length == 0x02) {
+        macos_fingerprint.cnt_02++;
+    } else if (w_length == 0xFF) {
+        macos_fingerprint.cnt_ff++;
+    }
+
+    /* Three 0x2 header reads without any 0xFF are macOS; iOS stops at two.
+     * Real PS5 has the same counts plus one 0x4, but its 0x4 always comes
+     * second, while macOS 15.7 sends it last, so the position tells them
+     * apart. slave_update_detected_host_os() is the public setter for the
+     * detected OS and re-arms the report debounce; despite the name it
+     * works on the master too. On the slave half process_wlength is never
+     * called, so this wrapper stays dormant there. */
+    if (macos_fingerprint.cnt_ff == 0 && macos_fingerprint.cnt_02 >= 3 && macos_fingerprint.second_wlength != 0x04) {
+        slave_update_detected_host_os(OS_MACOS);
+    }
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if(process_super_action(keycode, record->event.pressed)){
         return process_key_action(keycode, record->event.pressed, default_actions, ARRAY_SIZE(default_actions));
