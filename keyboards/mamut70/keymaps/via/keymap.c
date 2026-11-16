@@ -393,7 +393,7 @@ void keyboard_post_init_user(void) {
     // Initialize RGB to static blackG_inactiveG_
     rgblight_enable_noeeprom();
     rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
-    rgblight_setrgb(0,200,0);
+    rgblight_setrgb(0,153,0);
     if (!is_keyboard_left()) {
         /* host OS not known yet, see housekeeping_task_user */
         rgblight_setrgb_at(0, 0, 0, OS_LED_INDEX);
@@ -441,25 +441,25 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     }
     switch (current_layer) {
     case _BASE:
-        rgblight_setrgb(0,200,0);
+        rgblight_setrgb(0,153,0);
         break;
     case _PROG:
-        rgblight_setrgb(0,128,255);
+        rgblight_setrgb(128,0,255);
         break;
     case _NAV:
-        rgblight_setrgb(0,0,255);
+        rgblight_setrgb(153,153,153);
         break;
     case _NUMPAD:
-        rgblight_setrgb(0,255,255);
+        rgblight_setrgb(255,0,255);
         break;
     case _PC_CTR:
         rgblight_setrgb(77,77,77);
         break;
     case _PC:
-        rgblight_setrgb(0,77,0);
+        rgblight_setrgb(77,0,0);
         break;
     default:
-        rgblight_setrgb(0,200,0);
+        rgblight_setrgb(0,153,0);
     }
     previous_layer = current_layer;
   return state;
